@@ -36,7 +36,7 @@
 .header-logo-section {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 2rem;
 }
 
 .header-divider {
@@ -75,7 +75,7 @@
 }
 
 .logo-positivo-image {
-  height: 80px;
+  height: 50px;
   width: auto;
   object-fit: contain;
 }
@@ -773,7 +773,7 @@
   }
 
   .logo-positivo-image {
-    height: 70px;
+    height: 45px;
   }
 }
 
@@ -783,7 +783,7 @@
   }
   
   .logo-positivo-image {
-    height: 60px;
+    height: 40px;
   }
   
   .footer-copyright {
@@ -817,5 +817,56 @@
 
   .chapter-label {
     min-width: auto;
+  }
+}
+
+/* Botão Voltar ao Topo */
+.scroll-to-top-button {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  width: 50px;
+  height: 50px;
+  background: hsl(var(--positivo-orange));
+  color: white;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+  transition: all 0.3s ease;
+  opacity: 1;
+  transform: scale(1);
+}
+
+.scroll-to-top-button:hover {
+  background: hsl(14deg 100% 50%);
+  transform: scale(1.1);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+}
+
+.scroll-to-top-button:active {
+  transform: scale(0.95);
+}
+
+.scroll-to-top-button svg {
+  width: 24px;
+  height: 24px;
+}
+
+@media (max-width: 768px) {
+  .scroll-to-top-button {
+    bottom: 1.5rem;
+    right: 1.5rem;
+    width: 45px;
+    height: 45px;
+  }
+
+  .scroll-to-top-button svg {
+    width: 20px;
+    height: 20px;
   }
 }

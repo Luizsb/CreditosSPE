@@ -12,6 +12,7 @@ interface CreditData {
   autorias_livro?: string;
   autorias_guia?: string;
   autorias_audiovisual?: string;
+  autorias_digital?: string;
   capitulo_3?: string;
   capitulo_4?: string;
   capitulo_5?: string;
@@ -19,6 +20,8 @@ interface CreditData {
   capitulo_7?: string;
   capitulo_8?: string;
   creditos_gerais?: string;
+  // Campos dinâmicos adicionais (ex: autorias_*, outros campos por volume)
+  camposAdicionais?: Record<string, { label: string; valor: string }>;
 }
 
 interface RawGeneralCreditRow {
@@ -79,6 +82,7 @@ interface LoadedDisciplineData {
   autorias_livro?: string;
   autorias_guia?: string;
   autorias_audiovisual?: string;
+  autorias_digital?: string;
   capitulo_3?: string;
   capitulo_4?: string;
   capitulo_5?: string;
@@ -86,6 +90,8 @@ interface LoadedDisciplineData {
   capitulo_7?: string;
   capitulo_8?: string;
   creditos_gerais?: string;
+  // Campos dinâmicos adicionais
+  camposAdicionais?: Record<string, { label: string; valor: string }>;
 }
 
 // Mapeamento das disciplinas para os ícones
@@ -279,12 +285,32 @@ const Index = () => {
   const [allCreditsData, setAllCreditsData] = useState<CreditData[]>([]);
   const [generalCredits, setGeneralCredits] = useState<GeneralCreditRow[]>([]);
   const [allSoundMusicCredits, setAllSoundMusicCredits] = useState<Record<string, string>>({});
+  const [showScrollTop, setShowScrollTop] = useState(false);
 
   // Function to load data from Google Sheets (placeholder)
   useEffect(() => {
     // This will be replaced with actual Google Sheets API call
     // loadFromGoogleSheets();
   }, []);
+
+  // Detectar scroll para mostrar/ocultar botão "voltar ao topo"
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+      setShowScrollTop(scrollTop > 300);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // Função para scroll suave ao topo
+  const scrollToTop = () => {
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    });
+  };
 
   useEffect(() => {
     const loadCredits = async () => {
@@ -362,27 +388,41 @@ const Index = () => {
       }
 
       const funcao = String(row["função_exibida"] ?? row.funcao_exibida ?? "").toLowerCase();
+      const funcaoOriginal = String(row["função_exibida"] ?? row.funcao_exibida ?? "").trim();
+      const blocoCreditos = String(row.bloco_creditos ?? "").trim();
 
+      // Campos fixos conhecidos
       if (funcao.includes("livro")) {
-        acc[key].autorias_livro = row.bloco_creditos as string;
+        acc[key].autorias_livro = blocoCreditos;
       } else if (funcao.includes("guia")) {
-        acc[key].autorias_guia = row.bloco_creditos as string;
+        acc[key].autorias_guia = blocoCreditos;
       } else if (funcao.includes("audiovisual")) {
-        acc[key].autorias_audiovisual = row.bloco_creditos as string;
+        acc[key].autorias_audiovisual = blocoCreditos;
+      } else if (funcao.includes("digital")) {
+        acc[key].autorias_digital = blocoCreditos;
       } else if (funcao.includes("capítulo 3")) {
-        acc[key].capitulo_3 = row.bloco_creditos as string;
+        acc[key].capitulo_3 = blocoCreditos;
       } else if (funcao.includes("capítulo 4")) {
-        acc[key].capitulo_4 = row.bloco_creditos as string;
+        acc[key].capitulo_4 = blocoCreditos;
       } else if (funcao.includes("capítulo 5")) {
-        acc[key].capitulo_5 = row.bloco_creditos as string;
+        acc[key].capitulo_5 = blocoCreditos;
       } else if (funcao.includes("capítulo 6")) {
-        acc[key].capitulo_6 = row.bloco_creditos as string;
+        acc[key].capitulo_6 = blocoCreditos;
       } else if (funcao.includes("capítulo 7")) {
-        acc[key].capitulo_7 = row.bloco_creditos as string;
+        acc[key].capitulo_7 = blocoCreditos;
       } else if (funcao.includes("capítulo 8")) {
-        acc[key].capitulo_8 = row.bloco_creditos as string;
+        acc[key].capitulo_8 = blocoCreditos;
       } else if (funcao.includes("créditos gerais") || funcao.includes("créditos - imagens")) {
-        acc[key].creditos_gerais = row.bloco_creditos as string;
+        acc[key].creditos_gerais = blocoCreditos;
+      } else if (funcaoOriginal && blocoCreditos) {
+        // Campos dinâmicos: armazena qualquer função não mapeada
+        if (!acc[key].camposAdicionais) {
+          acc[key].camposAdicionais = {};
+        }
+        acc[key].camposAdicionais![funcaoOriginal] = {
+          label: funcaoOriginal,
+          valor: blocoCreditos
+        };
       }
 
       return acc;
@@ -465,7 +505,7 @@ const Index = () => {
           <div className="header-logo-section">
             <div className="header-divider"></div>
             <img 
-              src={getAssetPath("logo-positivo.png")} 
+              src={getAssetPath("logo-positivoSVG.svg")} 
               alt="Logo Positivo" 
               className="logo-positivo-image"
             />
@@ -610,6 +650,21 @@ const Index = () => {
                     </div>
                   )}
 
+                  {credit.autorias_digital && (
+                    <div className="credit-item">
+                      <strong>Digital:</strong>
+                      <p>{credit.autorias_digital}</p>
+                    </div>
+                  )}
+
+                  {/* Renderiza campos dinâmicos adicionais */}
+                  {credit.camposAdicionais && Object.entries(credit.camposAdicionais).map(([key, campo]) => (
+                    <div key={key} className="credit-item">
+                      <strong>{campo.label}:</strong>
+                      <p>{campo.valor}</p>
+                    </div>
+                  ))}
+
                   <div className="credits-section">
                     <strong className="credits-title">Créditos - Imagens</strong>
                     
@@ -696,7 +751,7 @@ const Index = () => {
           </p>
           <div className="footer-logos">
             <img 
-              src={getAssetPath("logo-positivo_white.png")} 
+              src={getAssetPath("logo-positivoWhiteSVG.svg")} 
               alt="Logo Positivo" 
               className="footer-logo-positivo"
             />
@@ -715,6 +770,31 @@ const Index = () => {
           </p>
         </div>
       </footer>
+
+      {/* Botão Voltar ao Topo */}
+      {showScrollTop && (
+        <button
+          onClick={scrollToTop}
+          className="scroll-to-top-button"
+          aria-label="Voltar ao topo"
+        >
+          <svg
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M5 15L12 8L19 15"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </button>
+      )}
     </div>
   );
 };
