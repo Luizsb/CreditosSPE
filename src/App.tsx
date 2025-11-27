@@ -10,20 +10,15 @@ import "./App.css";
 const queryClient = new QueryClient();
 
 // Get base path for GitHub Pages
-const getBasePath = () => {
-  // Check if we're on GitHub Pages
-  if (window.location.hostname === 'luizsb.github.io' || window.location.pathname.startsWith('/CreditosSPE')) {
-    return '/CreditosSPE';
-  }
-  return '';
-};
+// Vite sets import.meta.env.BASE_URL to the base path configured in vite.config.ts
+const basePath = import.meta.env.BASE_URL === '/' ? '' : import.meta.env.BASE_URL.replace(/\/$/, '');
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <Toaster />
       <Sonner />
-      <BrowserRouter basename={getBasePath()}>
+      <BrowserRouter basename={basePath}>
         <Routes>
           <Route path="/" element={<Index />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
