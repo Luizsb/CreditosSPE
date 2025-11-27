@@ -13,53 +13,148 @@
   position: sticky;
   top: 0;
   z-index: 100;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 .header-content {
   max-width: 1400px;
   margin: 0 auto;
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
-  margin-bottom: 1rem;
+  gap: 2rem;
+}
+
+.header-title {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 20px;
+  font-weight: 700;
+  color: #6A7390;
+  margin: 0;
+}
+
+.header-logo-section {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.header-divider {
+  width: 3px;
+  height: 28px;
+  background: #6A7390;
+}
+
+.logo-positivo-content {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.logo-sistema {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: hsl(var(--text-primary));
+  line-height: 1.2;
+}
+
+.logo-positivo-text {
+  font-size: 2rem;
+  font-weight: 700;
+  color: hsl(var(--positivo-orange));
+  line-height: 1;
+  letter-spacing: -0.5px;
+}
+
+.logo-tagline {
+  font-size: 0.75rem;
+  font-weight: 400;
+  color: hsl(var(--text-primary));
+  line-height: 1.2;
+  margin-top: 0.125rem;
+}
+
+.logo-positivo-image {
+  height: 80px;
+  width: auto;
+  object-fit: contain;
+}
+
+/* Filters Section */
+.filters-section {
+  background: white;
+  padding: 1.5rem 2rem;
+  border-bottom: 1px solid hsl(var(--border));
 }
 
 .header-controls {
+  max-width: 1400px;
+  margin: 0 auto;
   display: flex;
+  justify-content: flex-start;
   gap: 1rem;
 }
 
 .year-select,
 .segment-select {
-  min-width: 150px;
+  min-width: 100px;
+  width: auto;
+  max-width: 180px;
 }
 
-.header-logo {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
+.year-select button,
+.segment-select button {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+  font-size: 16px !important;
+  font-weight: 600 !important;
+  color: #32363B !important;
 }
 
-.logo-text {
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: hsl(var(--text-primary));
-  margin: 0;
+.year-select button,
+.segment-select button {
+  --tw-ring-color: transparent !important;
 }
 
-.logo-positivo {
-  background: hsl(var(--positivo-orange));
-  color: white;
-  padding: 0.5rem 1.5rem;
-  border-radius: 0.25rem;
-  font-weight: bold;
-  font-size: 1.25rem;
+.focus\:ring-ring:focus {
+  --tw-ring-color:hsl(14deg 100% 57% / 0%)!important;
 }
 
-.positivo-text {
-  font-weight: 700;
-  letter-spacing: -0.5px;
+.year-select button:focus,
+.segment-select button:focus,
+.year-select button:focus-visible,
+.segment-select button:focus-visible,
+.year-select button[data-state="open"]:focus,
+.segment-select button[data-state="open"]:focus {
+  outline: none !important;
+  border-color: hsl(var(--border)) !important;
+  box-shadow: none !important;
+  --tw-ring-offset-shadow: 0 0 #0000 !important;
+  --tw-ring-shadow: 0 0 #0000 !important;
+  --tw-ring-color: transparent !important;
+  box-shadow: 0 0 #0000, 0 0 #0000, 0 0 #0000 !important;
+}
+
+.year-select button[data-state="open"],
+.segment-select button[data-state="open"] {
+  border-color: hsl(var(--border)) !important;
+  box-shadow: none !important;
+  --tw-ring-offset-shadow: 0 0 #0000 !important;
+  --tw-ring-shadow: 0 0 #0000 !important;
+  --tw-ring-color: transparent !important;
+}
+
+.year-select button span,
+.segment-select button span {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+  font-size: 16px !important;
+  font-weight: 600 !important;
+  color: #32363B !important;
+}
+
+/* Volume Section */
+.volume-section {
+  background: #fafafa;
+  padding: 1rem 2rem;
 }
 
 .volume-selector {
@@ -67,50 +162,227 @@
   margin: 0 auto;
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-}
-
-.volume-label {
-  font-weight: 600;
-  margin-right: 0.5rem;
-  color: hsl(var(--text-primary));
+  gap: 0.75rem;
 }
 
 .volume-button {
-  min-width: 45px;
-  height: 36px;
+  min-width: auto;
+  height: 40px;
+  padding: 0.5rem 1.25rem;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 16px;
   font-weight: 600;
+  border-radius: 0.5rem;
   transition: all 0.2s ease;
+  border: 1px solid hsl(var(--border));
+  background: white;
+  color: #6A7390;
 }
 
 .volume-button.active {
-  background: hsl(var(--positivo-orange));
-  color: white;
-  border-color: hsl(var(--positivo-orange));
+  background: #FFE3D6 !important;
+  color: #FF6510 !important;
+  border: 1px solid #FF6510 !important;
+}
+
+.volume-button.active:hover {
+  background: #FFE3D6 !important;
+  color: #FF6510 !important;
 }
 
 .volume-button:not(.active) {
   background: white;
-  color: hsl(var(--text-primary));
+  color: #6A7390;
   border: 1px solid hsl(var(--border));
 }
 
 .volume-button:not(.active):hover {
-  border-color: hsl(var(--positivo-orange));
-  color: hsl(var(--positivo-orange));
+  background: #FFE3D6;
+  border-color: hsl(var(--border));
+  color: #6A7390;
+}
+
+/* General Credits Section */
+.general-credits-section {
+  max-width: 1400px;
+  margin: 1.5rem auto 0;
+  padding: 0 2rem 1.5rem;
+}
+
+.general-credits-content {
+  display: flex;
+  flex-direction: column;
+  gap: 3rem;
+}
+
+.general-block {
+  padding: 0;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+}
+
+.general-block--list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.general-list-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+.general-list-label {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-weight: 600;
+  font-size: 1rem;
+  color: #000;
+  position: relative;
+  padding-right: 0.25rem;
+  min-width: 200px;
+  text-align: right;
+}
+
+.general-list-label::after {
+  content: ":";
+  margin-left: 0.15rem;
+}
+
+.general-list-value {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-weight: 400;
+  font-size: 1rem;
+  color: #000;
+}
+
+.general-block--list .general-list-label {
+  min-width: 0;
+  text-align: left;
+}
+
+.general-block--list .general-list-row {
+  gap: 0.25rem;
+}
+
+.general-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+  gap: 1.25rem;
+}
+
+.general-box-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.general-box {
+  border: 1px solid #ccd0e0;
+  border-radius: 22px;
+  padding: 1.25rem 1.5rem;
+  background: #fff;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.05);
+}
+
+.general-box-title {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #000;
+  margin: 0 0 0.75rem;
+}
+
+.general-box-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.general-box-row {
+  display: grid;
+  grid-template-columns: 210px 1fr;
+  gap: 0.35rem;
+  align-items: baseline;
+}
+
+.general-box-label {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #000;
+  position: relative;
+  padding-right: 0.25rem;
+  text-align: right;
+}
+
+.general-box-label::after {
+  content: ":";
+  margin-left: 0.15rem;
+}
+
+.general-box-value {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 1rem;
+  font-weight: 400;
+  color: #6A7390;
+}
+
+@media (max-width: 768px) {
+  .general-credits-section {
+    padding: 1.5rem 1rem;
+  }
+
+  .general-box-row {
+    grid-template-columns: 1fr;
+  }
+
+  .general-list-row {
+    flex-direction: column;
+    gap: 0.1rem;
+  }
+
+  .general-list-label,
+  .general-box-label {
+    min-width: 0;
+    text-align: left;
+  }
 }
 
 /* Main Content */
 .credits-main {
   max-width: 1400px;
   margin: 0 auto;
-  padding: 2rem;
+  padding: 2rem 2rem 2rem 2rem;
+}
+
+/* Empty State */
+.empty-state {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 400px;
+  padding: 3rem 2rem;
+}
+
+.empty-state-message {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 18px;
+  font-weight: 500;
+  color: #6A7390;
+  text-align: center;
+  margin: 0;
+  line-height: 1.6;
 }
 
 .credits-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(600px, 1fr));
-  gap: 1.5rem;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.25rem;
+  max-width: 100%;
 }
 
 /* Credit Card */
@@ -147,6 +419,13 @@
   color: hsl(var(--positivo-orange));
   flex-shrink: 0;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.card-icon-image {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: 8px;
 }
 
 .card-title {
@@ -235,10 +514,65 @@
   padding-top: 1rem;
 }
 
+/* Sound and Music Credits Section */
+.sound-music-section {
+  max-width: 1400px;
+  margin: 2rem auto 0;
+  padding: 0 2rem 2rem;
+}
+
+.sound-music-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.25rem;
+}
+
+.sound-music-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.sound-music-title {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  color: #000000;
+  margin: 0;
+}
+
+.sound-music-box {
+  background: white;
+  border: 1px solid #ccd0e0;
+  border-radius: 22px;
+  padding: 1.25rem 1.5rem;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.05);
+}
+
+.sound-music-item {
+  display: flex;
+  align-items: baseline;
+  gap: 0.25rem;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+.sound-music-item strong {
+  font-weight: 600;
+  color: #000000;
+  flex-shrink: 0;
+}
+
+.sound-music-item span {
+  font-weight: 400;
+  color: #000000;
+  word-wrap: break-word;
+}
+
 /* Footer */
 .credits-footer {
   background: hsl(var(--text-primary));
-  color: white;
   padding: 2.5rem 2rem;
   margin-top: 3rem;
 }
@@ -246,53 +580,85 @@
 .footer-content {
   max-width: 1400px;
   margin: 0 auto;
+  text-align: center;
+}
+
+.footer-copyright {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  color: white;
+  margin: 0 0 3rem 0;
+  line-height: 1.6;
 }
 
 .footer-logos {
   display: flex;
+  justify-content: center;
   align-items: center;
-  gap: 2rem;
-  margin-bottom: 2rem;
-  padding-bottom: 2rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  gap: 6rem;
 }
 
-.logo-positivo-footer {
-  background: hsl(var(--positivo-orange));
-  padding: 0.625rem 1.5rem;
-  border-radius: 0.25rem;
+.footer-logo-positivo {
+  height: 80px;
+  width: auto;
+  object-fit: contain;
 }
 
-.logo-secondary {
-  background: white;
-  color: hsl(var(--text-primary));
-  padding: 0.625rem 1.5rem;
-  border-radius: 0.25rem;
-}
-
-.secondary-text {
-  font-weight: 700;
-  font-size: 1.125rem;
-}
-
-.footer-info {
+.footer-logo-abdr-container {
   display: flex;
   flex-direction: column;
+  align-items: center;
   gap: 0.5rem;
 }
 
-.footer-text,
-.footer-contact {
+.footer-logo-abdr {
+  height: 120px;
+  width: auto;
+  object-fit: contain;
+}
+
+.footer-production-text {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  color: white;
   margin: 0;
-  font-size: 0.875rem;
-  opacity: 0.9;
+  text-align: center;
+}
+
+.footer-info {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  color: white;
+  margin: 2rem 0 0 0;
+  text-align: center;
   line-height: 1.6;
+}
+
+.footer-link {
+  color: white;
+  text-decoration: underline;
+  transition: opacity 0.2s ease;
+}
+
+.footer-link:hover {
+  opacity: 0.8;
 }
 
 /* Responsive Design */
 @media (max-width: 1024px) {
   .credits-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .general-grid {
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  }
+  
+  .sound-music-grid {
+    grid-template-columns: repeat(2, 1fr);
   }
 }
 
@@ -304,12 +670,50 @@
   .header-content {
     flex-direction: column;
     gap: 1rem;
-    align-items: flex-start;
+    align-items: center;
+  }
+
+  .header-title {
+    text-align: center;
+  }
+
+  .header-divider {
+    display: none;
+  }
+
+  .header-logo-section {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .filters-section {
+    padding: 1rem;
   }
 
   .header-controls {
     flex-direction: column;
     width: 100%;
+    gap: 0.75rem;
+  }
+
+  .year-select,
+  .segment-select {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .volume-section {
+    padding: 1rem;
+  }
+
+  .volume-selector {
+    flex-wrap: wrap;
+    justify-content: flex-start;
+  }
+
+  .footer-logos {
+    flex-direction: column;
+    gap: 2rem;
   }
 
   .year-select,
@@ -317,18 +721,33 @@
     width: 100%;
   }
 
-  .header-logo {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.5rem;
-  }
-
   .volume-selector {
     flex-wrap: wrap;
+    width: 100%;
   }
 
   .credits-main {
     padding: 1rem;
+  }
+  
+  .credits-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .general-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .sound-music-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .sound-music-section {
+    padding: 0 1rem;
+  }
+  
+  .general-credits-section {
+    padding: 0 1rem 1.5rem;
   }
 
   .card-header-section {
@@ -336,19 +755,42 @@
     align-items: flex-start;
   }
 
-  .footer-logos {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 1rem;
+  .logo-positivo-text {
+    font-size: 1.5rem;
+  }
+
+  .logo-positivo-image {
+    height: 70px;
   }
 }
 
 @media (max-width: 480px) {
-  .logo-positivo,
-  .logo-positivo-footer,
-  .logo-secondary {
-    padding: 0.5rem 1rem;
-    font-size: 1rem;
+  .logo-positivo-text {
+    font-size: 1.25rem;
+  }
+  
+  .logo-positivo-image {
+    height: 60px;
+  }
+  
+  .footer-copyright {
+    font-size: 14px;
+  }
+
+  .footer-logos {
+    gap: 1.5rem;
+  }
+
+  .footer-logo-positivo {
+    height: 60px;
+  }
+
+  .footer-logo-abdr {
+    height: 90px;
+  }
+
+  .footer-info {
+    font-size: 14px;
   }
 
   .card-title {
