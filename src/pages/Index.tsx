@@ -6,6 +6,7 @@ import * as XLSX from "xlsx";
 interface CreditData {
   anoColecao?: string;
   volume?: number;
+  segmento?: string;
   area: string;
   disciplina: string;
   icon: string;
@@ -27,6 +28,7 @@ interface CreditData {
 interface RawGeneralCreditRow {
   ano_colecao?: number | string;
   volume?: number | string;
+  segmento?: string;
   disciplina?: string;
   bloco_creditos?: string;
   area_principal?: string;
@@ -39,6 +41,7 @@ interface RawGeneralCreditRow {
 interface GeneralCreditRow {
   anoColecao: string;
   volume: number;
+  segmento: string;
   disciplina: string;
   areaPrincipal: string;
   funcaoExibida: string;
@@ -53,6 +56,7 @@ interface GeneralGroup {
 interface RawDisciplineRow {
   ano_colecao?: number | string;
   volume?: number | string;
+  segmento?: string;
   disciplina?: string;
   area_principal?: string;
   "área_principal"?: string;
@@ -76,6 +80,7 @@ interface RawDisciplineRow {
 interface LoadedDisciplineData {
   anoColecao: string;
   volume: number;
+  segmento: string;
   area: string;
   disciplina: string;
   icon: string;
@@ -331,6 +336,7 @@ const Index = () => {
           .map((row) => ({
             anoColecao: String(row.ano_colecao ?? "").trim(),
             volume: Number(row.volume ?? 0),
+            segmento: String(row.segmento ?? "").trim(),
             disciplina: String(row.disciplina ?? "").trim(),
             areaPrincipal: String(row["área_principal"] ?? row.area_principal ?? "").trim(),
             funcaoExibida: String(row["função_exibida"] ?? row.funcao_exibida ?? "").trim(),
@@ -339,7 +345,7 @@ const Index = () => {
 
         const normalizedDiscipline = buildDisciplineCredits(rows);
 
-        // Filtrar créditos de Sons e Música por ano e volume
+        // Filtrar créditos de Sons e Música por ano, volume e segmento
         const soundMusicMap: Record<string, string> = {};
         rows.forEach((row) => {
           const disciplina = String(row.disciplina ?? "").toLowerCase();
@@ -347,13 +353,14 @@ const Index = () => {
           const funcaoExibida = String(row["função_exibida"] ?? row.funcao_exibida ?? "").toLowerCase();
           const ano = String(row.ano_colecao ?? "").trim();
           const volume = String(row.volume ?? "").trim();
+          const segmento = String(row.segmento ?? "").trim().toLowerCase();
           
           if (
             disciplina === "gerais" &&
             (areaPrincipal.includes("sons") || areaPrincipal.includes("música")) &&
             (funcaoExibida.includes("créditos") || funcaoExibida.includes("sons") || funcaoExibida.includes("música"))
           ) {
-            const key = `${ano}-${volume}`;
+            const key = `${ano}-${volume}-${segmento}`;
             soundMusicMap[key] = String(row.bloco_creditos ?? "").trim();
           }
         });
@@ -376,11 +383,13 @@ const Index = () => {
         return acc;
       }
 
-      const key = `${row.ano_colecao}-${row.volume}-${disciplina}`.toLowerCase();
+      const segmento = String(row.segmento ?? "").trim();
+      const key = `${row.ano_colecao}-${row.volume}-${segmento}-${disciplina}`.toLowerCase();
       if (!acc[key]) {
         acc[key] = {
           anoColecao: String(row.ano_colecao ?? "").trim(),
           volume: Number(row.volume ?? 0),
+          segmento,
           area: String(row["área_principal"] ?? row.area_principal ?? ""),
           disciplina,
           icon: iconMap[disciplina.toUpperCase()] || "placeholder"
@@ -434,14 +443,15 @@ const Index = () => {
   const areaOrder = ["Geral", "Núcleo de Arte", "Núcleo de Conteúdo Educacional"];
 
   const filteredGeneralCredits = useMemo(() => {
-    const byYearAndVolume = generalCredits.filter(
+    const byYearVolumeAndSegment = generalCredits.filter(
       (item) =>
         item.anoColecao === year &&
         item.volume === activeVolume &&
+        item.segmento.toLowerCase() === segment.toLowerCase() &&
         item.disciplina.toLowerCase() === "todos"
     );
 
-    const grouped = byYearAndVolume.reduce<Record<string, GeneralGroup["items"]>>((acc, item) => {
+    const grouped = byYearVolumeAndSegment.reduce<Record<string, GeneralGroup["items"]>>((acc, item) => {
       if (!item.areaPrincipal) return acc;
 
       if (!acc[item.areaPrincipal]) {
@@ -470,20 +480,23 @@ const Index = () => {
         }
         return a.area.localeCompare(b.area);
       });
-  }, [generalCredits, year, activeVolume]);
+  }, [generalCredits, year, activeVolume, segment]);
 
   const filteredCreditsData = useMemo(() => {
     return allCreditsData.filter(
       (credit) =>
         (!credit.anoColecao || credit.anoColecao === year) &&
-        (!credit.volume || credit.volume === activeVolume)
+        (!credit.volume || credit.volume === activeVolume) &&
+        (!credit.segmento || credit.segmento.toLowerCase() === segment.toLowerCase())
     );
-  }, [allCreditsData, year, activeVolume]);
+  }, [allCreditsData, year, activeVolume, segment]);
 
   const filteredSoundMusicCredits = useMemo(() => {
-    const key = `${year}-${activeVolume}`;
+    // Normalizar segmento para chave (lowercase)
+    const segmentKey = segment.toLowerCase();
+    const key = `${year}-${activeVolume}-${segmentKey}`;
     return allSoundMusicCredits[key] || "";
-  }, [allSoundMusicCredits, year, activeVolume]);
+  }, [allSoundMusicCredits, year, activeVolume, segment]);
 
   const hasDataForCurrentSelection = useMemo(() => {
     return (
@@ -532,8 +545,9 @@ const Index = () => {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="Ensino Médio">Ensino Médio</SelectItem>
+              <SelectItem value="Ensino Infantil">Ensino Infantil</SelectItem>
               <SelectItem value="Ensino Fundamental">Ensino Fundamental</SelectItem>
+              <SelectItem value="Ensino Médio">Ensino Médio</SelectItem>
             </SelectContent>
           </Select>
         </div>
