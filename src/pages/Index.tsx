@@ -264,6 +264,14 @@ const sampleData: CreditData[] = [
   }
 ];
 
+// Helper function to get asset path with base URL
+const getAssetPath = (path: string): string => {
+  const baseUrl = import.meta.env.BASE_URL;
+  // Remove leading slash from path if present, baseUrl already has trailing slash
+  const cleanPath = path.startsWith('/') ? path.slice(1) : path;
+  return `${baseUrl}${cleanPath}`;
+};
+
 const Index = () => {
   const [year, setYear] = useState("2025");
   const [segment, setSegment] = useState("Ensino Médio");
@@ -281,7 +289,7 @@ const Index = () => {
   useEffect(() => {
     const loadCredits = async () => {
       try {
-        const response = await fetch("/CreditosSPE.xlsx");
+        const response = await fetch(getAssetPath("CreditosSPE.xlsx"));
         if (!response.ok) {
           throw new Error("Não foi possível carregar a planilha de créditos.");
         }
@@ -457,7 +465,7 @@ const Index = () => {
           <div className="header-logo-section">
             <div className="header-divider"></div>
             <img 
-              src="/logo-positivo.png" 
+              src={getAssetPath("logo-positivo.png")} 
               alt="Logo Positivo" 
               className="logo-positivo-image"
             />
@@ -560,7 +568,7 @@ const Index = () => {
             {filteredCreditsData.map((credit, index) => {
             // Obtém a sigla do ícone baseado na disciplina ou usa o icon do credit
             const iconSlug = iconMap[credit.disciplina] || credit.icon;
-            const iconPath = `/${iconSlug}.png`;
+            const iconPath = getAssetPath(`${iconSlug}.png`);
             
             return (
               <div 
@@ -688,13 +696,13 @@ const Index = () => {
           </p>
           <div className="footer-logos">
             <img 
-              src="/logo-positivo_white.png" 
+              src={getAssetPath("logo-positivo_white.png")} 
               alt="Logo Positivo" 
               className="footer-logo-positivo"
             />
             <div className="footer-logo-abdr-container">
               <img 
-                src="/abdr_white.png" 
+                src={getAssetPath("abdr_white.png")} 
                 alt="ABDR" 
                 className="footer-logo-abdr"
               />
