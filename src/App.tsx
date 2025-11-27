@@ -9,12 +9,21 @@ import "./App.css";
 
 const queryClient = new QueryClient();
 
+// Get base path for GitHub Pages
+const getBasePath = () => {
+  // Check if we're on GitHub Pages
+  if (window.location.hostname === 'luizsb.github.io' || window.location.pathname.startsWith('/CreditosSPE')) {
+    return '/CreditosSPE';
+  }
+  return '';
+};
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <Toaster />
       <Sonner />
-      <BrowserRouter>
+      <BrowserRouter basename={getBasePath()}>
         <Routes>
           <Route path="/" element={<Index />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
