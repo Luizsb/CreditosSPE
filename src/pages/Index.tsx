@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+﻿import { useState, useEffect, useMemo } from "react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import * as XLSX from "xlsx";
@@ -7,6 +7,7 @@ interface CreditData {
   anoColecao?: string;
   volume?: number;
   segmento?: string;
+  serie?: string;
   area: string;
   disciplina: string;
   icon: string;
@@ -29,8 +30,10 @@ interface RawGeneralCreditRow {
   ano_colecao?: number | string;
   volume?: number | string;
   segmento?: string;
+  serie?: string;
   disciplina?: string;
   bloco_creditos?: string;
+  creditos?: string;
   area_principal?: string;
   "área_principal"?: string;
   funcao_exibida?: string;
@@ -42,6 +45,7 @@ interface GeneralCreditRow {
   anoColecao: string;
   volume: number;
   segmento: string;
+  serie?: string;
   disciplina: string;
   areaPrincipal: string;
   funcaoExibida: string;
@@ -57,6 +61,7 @@ interface RawDisciplineRow {
   ano_colecao?: number | string;
   volume?: number | string;
   segmento?: string;
+  serie?: string;
   disciplina?: string;
   area_principal?: string;
   "área_principal"?: string;
@@ -81,6 +86,7 @@ interface LoadedDisciplineData {
   anoColecao: string;
   volume: number;
   segmento: string;
+  serie?: string;
   area: string;
   disciplina: string;
   icon: string;
@@ -114,191 +120,61 @@ const iconMap: Record<string, string> = {
   "GEOGRAFIA": "geo",
   "HISTÓRIA": "his",
   "MATEMÁTICA": "mat",
-  "SOCIOLOGIA": "soc"
+  "SOCIOLOGIA": "soc",
+  "CONVERSAS PEDAGÓGICAS": "conv",
+  "CONVERSAS": "conv"
 };
 
-// Sample data structure - will be replaced by Google Sheets data
-const sampleData: CreditData[] = [
-  {
-    area: "Língua Portuguesa",
-    disciplina: "LÍNGUA PORTUGUESA",
-    icon: "por",
-    autorias_livro: "Equipe Editorial | Márcia Paganini Cavéquia | Pedro Leandro",
-    autorias_guia: "Flávia Cristina",
-    autorias_audiovisual: "Luís Vitor et al | Luís Flavio | Rogério Tilio et al",
-    capitulo_3: "Getty Images | Latitude Stock | Latinstock",
-    capitulo_4: "Shutterstock | Stock.Adobe.com | Wikimedia Commons",
-    creditos_gerais: "123RF.com | Freepik.com | Pexels.com"
-  },
-  {
-    area: "Literatura",
-    disciplina: "LITERATURA",
-    icon: "lit",
-    autorias_livro: "Walmick Braga | Mariana Novaes Rodrigues | Juliano Souza",
-    autorias_guia: "Renata Muniz Santos",
-    autorias_audiovisual: "Arquivo IVI et al | Autodesk et al | Iv et al",
-    capitulo_3: "Shutterstock | Getty Images | Latinstock",
-    capitulo_4: "Arquivo Adobe Stock | Dreamstime | Pixabay",
-    creditos_gerais: "Getty Images | Shutterstock | Wikimedia Commons"
-  },
-  {
-    area: "Língua Inglesa",
-    disciplina: "LÍNGUA INGLESA",
-    icon: "ing",
-    autorias_livro: "Cynthia Pittteri | Magali Krause | Jorge Vaz Andrade",
-    autorias_guia: "David Mitchell Duque Estrada | Julio Souza",
-    autorias_audiovisual: "Bianca Mc Donald | Julio Souza | Jason Connor",
-    capitulo_3: "Getty Images | Shutterstock | Unsplash",
-    capitulo_4: "Adobe Stock | Dreamstime | iStock",
-    creditos_gerais: "Wikimedia Commons | Public Domain | Creative Commons"
-  },
-  {
-    area: "Língua Espanhola",
-    disciplina: "LÍNGUA ESPANHOLA",
-    icon: "esp",
-    autorias_livro: "Rodrigo de Espíndola | Ana Luisa Díaz | Sofia Martinez",
-    autorias_guia: "Flamínia M. Souza | José Acevedo",
-    autorias_audiovisual: "Arquivo et al | Shutterstock et al",
-    capitulo_3: "Shutterstock | Getty Images | Adobe Stock",
-    capitulo_4: "Archivo ABC | Latinstock | Depositphotos",
-    creditos_gerais: "EFE | Europa Press | Creative Commons"
-  },
-  {
-    area: "Arte",
-    disciplina: "ARTE",
-    icon: "art",
-    autorias_livro: "Luciana Ferreira de Andrade | Mônica Pena Lobo Chaves",
-    autorias_guia: "Ana Carolina de Souza Santos | Márcia Soares",
-    autorias_audiovisual: "Museu do Louvre | MoMA | Pinacoteca",
-    capitulo_3: "Museu Imperial | MAM | Wikimedia Commons",
-    capitulo_4: "Getty Images | Shutterstock | Art Collection",
-    creditos_gerais: "Creative Commons | Public Domain | Museum Collections"
-  },
-  {
-    area: "Filosofia",
-    disciplina: "FILOSOFIA",
-    icon: "fil",
-    autorias_livro: "Professor Thomaz S. Magalhães | Dra. Elisa B. de Souza",
-    autorias_guia: "Diogo Maria Bastos da Silva | Juliana Peres",
-    autorias_audiovisual: "Isa e Matheus Seco | Rodrigo Diniz Silva",
-    capitulo_3: "Getty Images | Shutterstock | Historical Archive",
-    capitulo_4: "Wikimedia Commons | Philosophy Archives",
-    creditos_gerais: "Public Domain | Academic Sources | Creative Commons"
-  },
-  {
-    area: "Educação Física",
-    disciplina: "EDUCAÇÃO FÍSICA",
-    icon: "edf",
-    autorias_livro: "Prof.ª Márcio Silva | M.Sc José Eduardo Soares Jr.",
-    autorias_guia: "Pedro Henrique C. Moreira Soares | Ana Paula Costa",
-    autorias_audiovisual: "Vídeo Publicações | Mov et Arquieto et al",
-    capitulo_3: "Getty Images | Sports Photos | Action Images",
-    capitulo_4: "Shutterstock | Olympic Archives | FIFA Media",
-    creditos_gerais: "Sports Illustrated | ESPN Archives | Reuters"
-  },
-  {
-    area: "Biologia",
-    disciplina: "BIOLOGIA",
-    icon: "bio",
-    autorias_livro: "Dr. Carlos Daniel E. da Silva | Dra. Patricia M. Santos",
-    autorias_guia: "Prof. Lucas Lima | Bióloga Marina Ferreira",
-    autorias_audiovisual: "Science Source | Nature Archives",
-    capitulo_3: "Getty Images | Science Photo Library",
-    capitulo_4: "Shutterstock | National Geographic | Nature",
-    creditos_gerais: "Scientific American | Biology Archives | Wikimedia"
-  },
-  {
-    area: "Física",
-    disciplina: "FÍSICA",
-    icon: "fis",
-    autorias_livro: "Prof. Ricardo Mendes | Dr. Fernando Costa",
-    autorias_guia: "M.Sc Roberto Silva | Física Prof. Ana Lúcia",
-    autorias_audiovisual: "Physics Lab | Scientific Videos",
-    capitulo_3: "Getty Images | Science Museum | MIT Archives",
-    capitulo_4: "Shutterstock | NASA | CERN Media",
-    creditos_gerais: "Physics Today | Nature Physics | Science Direct"
-  },
-  {
-    area: "Química",
-    disciplina: "QUÍMICA",
-    icon: "qui",
-    autorias_livro: "Dra. Mariana Oliveira | Prof. João Santos",
-    autorias_guia: "Química Prof. Carlos Alberto | M.Sc Paula Dias",
-    autorias_audiovisual: "Chemical Lab | Science Videos",
-    capitulo_3: "Getty Images | Chemical Society | Lab Photos",
-    capitulo_4: "Shutterstock | Science Source | Nature",
-    creditos_gerais: "Journal of Chemistry | ACS Publications | RSC"
-  },
-  {
-    area: "Geografia",
-    disciplina: "GEOGRAFIA",
-    icon: "geo",
-    autorias_livro: "Prof. André Martins | Dra. Beatriz Lima",
-    autorias_guia: "Geógrafo Roberto Costa | Prof.ª Sandra Reis",
-    autorias_audiovisual: "National Geographic | GIS Resources",
-    capitulo_3: "Getty Images | NASA Earth Observatory",
-    capitulo_4: "Shutterstock | UN Maps | World Atlas",
-    creditos_gerais: "IBGE | UN Geographic | Map Collections"
-  },
-  {
-    area: "História",
-    disciplina: "HISTÓRIA",
-    icon: "his",
-    autorias_livro: "Prof. Dr. Marcos Pereira | Dra. Julia Santos",
-    autorias_guia: "Historiador Carlos Mendes | Prof.ª Ana Costa",
-    autorias_audiovisual: "History Channel | Documentary Archives",
-    capitulo_3: "Getty Images | Historical Archives | Museum Collections",
-    capitulo_4: "Shutterstock | National Archives | Library of Congress",
-    creditos_gerais: "Wikimedia Commons | Historical Society | Public Archives"
-  },
-  {
-    area: "Matemática",
-    disciplina: "MATEMÁTICA",
-    icon: "mat",
-    autorias_livro: "Prof. Paulo Silva | Dra. Maria Oliveira",
-    autorias_guia: "Matemático José Santos | Prof. Ricardo Costa",
-    autorias_audiovisual: "Math Videos | Educational Resources",
-    capitulo_3: "Getty Images | Mathematical Illustrations",
-    capitulo_4: "Shutterstock | Math Archives | Academic Resources",
-    creditos_gerais: "Mathematics Today | Academic Publications"
-  },
-  {
-    area: "Sociologia",
-    disciplina: "SOCIOLOGIA",
-    icon: "soc",
-    autorias_livro: "Prof. Dr. Antonio Silva | Dra. Carmen Rodrigues",
-    autorias_guia: "Sociólogo Fernando Costa | Prof.ª Beatriz Lima",
-    autorias_audiovisual: "Social Sciences Archives | Documentary",
-    capitulo_3: "Getty Images | Social Studies Collection",
-    capitulo_4: "Shutterstock | Academic Archives | Research Images",
-    creditos_gerais: "Social Science Review | Academic Journals"
-  }
-];
-
-// Helper function to get asset path with base URL
+// Resolve assets respeitando o base path configurado no Vite
 const getAssetPath = (path: string): string => {
   const baseUrl = import.meta.env.BASE_URL;
-  // Remove leading slash from path if present, baseUrl already has trailing slash
   const cleanPath = path.startsWith('/') ? path.slice(1) : path;
   return `${baseUrl}${cleanPath}`;
 };
 
+// Normalização usada para comparar segmentos e séries sem se preocupar com acentos/caixa
+const removeDiacritics = (value: string): string =>
+  value.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+
+const normalizeSegmentValue = (value: string): string =>
+  removeDiacritics(value || "").trim().toLowerCase();
+
+const segmentsMatch = (segmentA?: string, segmentB?: string): boolean => {
+  if (!segmentA || !segmentB) {
+    return false;
+  }
+  const normA = normalizeSegmentValue(segmentA);
+  const normB = normalizeSegmentValue(segmentB);
+  if (normA === normB) {
+    return true;
+  }
+  return normA.includes("infantil") && normB.includes("infantil");
+};
+
+const getSegmentKey = (segment?: string): string => {
+  const normalized = normalizeSegmentValue(segment || "");
+  if (!normalized) return "";
+  if (normalized.includes("infantil")) {
+    return "infantil";
+  }
+  return normalized;
+};
+
 const Index = () => {
-  const [year, setYear] = useState("2025");
-  const [segment, setSegment] = useState("Ensino Médio");
+  const [year, setYear] = useState("");
+  const [segment, setSegment] = useState("");
+  const [serie, setSerie] = useState("");
   const [activeVolume, setActiveVolume] = useState(1);
   const [allCreditsData, setAllCreditsData] = useState<CreditData[]>([]);
   const [generalCredits, setGeneralCredits] = useState<GeneralCreditRow[]>([]);
   const [allSoundMusicCredits, setAllSoundMusicCredits] = useState<Record<string, string>>({});
+  const [allRawRows, setAllRawRows] = useState<(RawGeneralCreditRow & RawDisciplineRow)[]>([]);
+  const [availableYears, setAvailableYears] = useState<string[]>([]);
   const [showScrollTop, setShowScrollTop] = useState(false);
+  const normalizedSegment = normalizeSegmentValue(segment);
+  const isInfantilSegment = normalizedSegment.includes("infantil");
 
-  // Function to load data from Google Sheets (placeholder)
-  useEffect(() => {
-    // This will be replaced with actual Google Sheets API call
-    // loadFromGoogleSheets();
-  }, []);
-
-  // Detectar scroll para mostrar/ocultar botão "voltar ao topo"
+  // Monitora o scroll para exibir/ocultar o botão "voltar ao topo"
   useEffect(() => {
     const handleScroll = () => {
       const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
@@ -309,7 +185,6 @@ const Index = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Função para scroll suave ao topo
   const scrollToTop = () => {
     window.scrollTo({
       top: 0,
@@ -317,57 +192,140 @@ const Index = () => {
     });
   };
 
+  // Converte entradas como "V4" ou "4" em um número
+  const parseVolume = (volume: string | number | undefined): number => {
+    if (typeof volume === 'number') {
+      return volume;
+    }
+    const volumeStr = String(volume ?? "").trim();
+    if (!volumeStr) return 0;
+    
+    const match = volumeStr.match(/^[Vv]?(\d+)$/);
+    if (match) {
+      return Number(match[1]);
+    }
+    
+    const num = Number(volumeStr);
+    return isNaN(num) ? 0 : num;
+  };
+
   useEffect(() => {
     const loadCredits = async () => {
       try {
-        const response = await fetch(getAssetPath("CreditosSPE.xlsx"));
+        // Adiciona timestamp para evitar cache do navegador
+        const timestamp = new Date().getTime();
+        const url = `${getAssetPath("creditos.xlsx")}?t=${timestamp}`;
+        const response = await fetch(url, {
+          cache: "no-store"
+        });
         if (!response.ok) {
           throw new Error("Não foi possível carregar a planilha de créditos.");
         }
 
         const buffer = await response.arrayBuffer();
         const workbook = XLSX.read(buffer, { type: "array" });
-        const sheet = workbook.Sheets[workbook.SheetNames[0]];
-        const rows = XLSX.utils.sheet_to_json(sheet, { defval: "" }) as (RawGeneralCreditRow &
-          RawDisciplineRow)[];
+        
+        // Ler aba "Geral" (Sessões Gerais)
+        const geralSheet = workbook.Sheets["Geral"];
+        const geralRows = geralSheet 
+          ? (XLSX.utils.sheet_to_json(geralSheet, { defval: "" }) as RawGeneralCreditRow[])
+          : [];
 
-        const normalizedGeneral: GeneralCreditRow[] = rows
-          .filter((row) => String(row.disciplina).toLowerCase() === "todos")
-          .map((row) => ({
+        // Ler aba "Autorias" (Disciplinas)
+        const autoriasSheet = workbook.Sheets["Autorias"];
+        const autoriasRows = autoriasSheet
+          ? (XLSX.utils.sheet_to_json(autoriasSheet, { defval: "" }) as RawDisciplineRow[])
+          : [];
+
+        // Combinar todas as linhas para processamento
+        const allRows = [...geralRows, ...autoriasRows] as (RawGeneralCreditRow & RawDisciplineRow)[];
+
+        // Processar dados da aba Geral
+        const normalizedGeneral: GeneralCreditRow[] = geralRows.map((row) => {
+          const volumeStr = String(row.volume ?? "");
+          const volumeNum = parseVolume(volumeStr);
+          
+          return {
             anoColecao: String(row.ano_colecao ?? "").trim(),
-            volume: Number(row.volume ?? 0),
+            volume: volumeNum,
             segmento: String(row.segmento ?? "").trim(),
-            disciplina: String(row.disciplina ?? "").trim(),
+            serie: row.serie ? String(row.serie).trim() : undefined,
+            disciplina: "todos", // A aba Geral não tem disciplina específica
             areaPrincipal: String(row["área_principal"] ?? row.area_principal ?? "").trim(),
             funcaoExibida: String(row["função_exibida"] ?? row.funcao_exibida ?? "").trim(),
-            blocoCreditos: String(row.bloco_creditos ?? "").trim()
-          }));
+            blocoCreditos: String(row.creditos ?? row.bloco_creditos ?? "").trim()
+          };
+        });
 
-        const normalizedDiscipline = buildDisciplineCredits(rows);
+        // Processar dados da aba Autorias
+        const normalizedDiscipline = buildDisciplineCredits(autoriasRows);
 
-        // Filtrar créditos de Sons e Música por ano, volume e segmento
+        // Filtrar créditos de Sons e Música por ano, volume, segmento e série
         const soundMusicMap: Record<string, string> = {};
-        rows.forEach((row) => {
-          const disciplina = String(row.disciplina ?? "").toLowerCase();
-          const areaPrincipal = String(row["área_principal"] ?? row.area_principal ?? "").toLowerCase();
-          const funcaoExibida = String(row["função_exibida"] ?? row.funcao_exibida ?? "").toLowerCase();
+        geralRows.forEach((row) => {
+          const areaPrincipalRaw = String(
+            row["área_principal"] ??
+            row["?rea_principal"] ??
+            row.area_principal ??
+            ""
+          ).trim();
+          const funcaoExibidaRaw = String(
+            row["função_exibida"] ??
+            row["fun??o_exibida"] ??
+            row.funcao_exibida ??
+            ""
+          ).trim();
+          const areaPrincipalNormalized = removeDiacritics(areaPrincipalRaw).toLowerCase();
+          const funcaoExibidaNormalized = removeDiacritics(funcaoExibidaRaw).toLowerCase();
           const ano = String(row.ano_colecao ?? "").trim();
-          const volume = String(row.volume ?? "").trim();
-          const segmento = String(row.segmento ?? "").trim().toLowerCase();
-          
-          if (
-            disciplina === "gerais" &&
-            (areaPrincipal.includes("sons") || areaPrincipal.includes("música")) &&
-            (funcaoExibida.includes("créditos") || funcaoExibida.includes("sons") || funcaoExibida.includes("música"))
-          ) {
-            const key = `${ano}-${volume}-${segmento}`;
-            soundMusicMap[key] = String(row.bloco_creditos ?? "").trim();
+          const volumeStr = String(row.volume ?? "").trim();
+          const volumeNum = parseVolume(volumeStr);
+          const segmentoRaw = String(row.segmento ?? "").trim();
+          const serieStr = row.serie ? String(row.serie).trim() : "";
+          const segmentKey = getSegmentKey(segmentoRaw);
+          const serieKey = serieStr ? `-${normalizeSegmentValue(serieStr)}` : "";
+          const isRelevantArea =
+            areaPrincipalNormalized.includes("sons") ||
+            areaPrincipalNormalized.includes("musica") ||
+            areaPrincipalNormalized === "geral";
+          const isRelevantFuncao =
+            funcaoExibidaNormalized.includes("creditos") ||
+            funcaoExibidaNormalized.includes("sons") ||
+            funcaoExibidaNormalized.includes("musica");
+          const creditText = String(row.creditos ?? row.bloco_creditos ?? "").trim();
+
+          if (segmentKey && ano && volumeNum > 0 && isRelevantArea && isRelevantFuncao && creditText) {
+            const baseKey = `${ano}-${volumeNum}-${segmentKey}`.toLowerCase();
+            const fullKey = `${baseKey}${serieKey}`.toLowerCase();
+            soundMusicMap[fullKey] = creditText;
+
+            if (serieKey && !soundMusicMap[baseKey]) {
+              soundMusicMap[baseKey] = creditText;
+            }
           }
         });
+
+        // Extrair anos únicos
+        const uniqueYears = Array.from(
+          new Set(
+            allRows
+              .map((row) => String(row.ano_colecao ?? "").trim())
+              .filter((year) => year !== "")
+          )
+        ).sort((a, b) => b.localeCompare(a)); // Ordenar do mais recente para o mais antigo
 
         setGeneralCredits(normalizedGeneral);
         setAllCreditsData(normalizedDiscipline.length > 0 ? normalizedDiscipline : []);
         setAllSoundMusicCredits(soundMusicMap);
+        setAllRawRows(allRows);
+        setAvailableYears(uniqueYears);
+
+        // Definir valores iniciais com base nos dados disponíveis
+        if (uniqueYears.length > 0) {
+          if (!year || !uniqueYears.includes(year)) {
+            setYear(uniqueYears[0]);
+          }
+        }
       } catch (error) {
         console.error("Erro ao carregar os créditos:", error);
       }
@@ -384,12 +342,21 @@ const Index = () => {
       }
 
       const segmento = String(row.segmento ?? "").trim();
-      const key = `${row.ano_colecao}-${row.volume}-${segmento}-${disciplina}`.toLowerCase();
+      const volumeStr = String(row.volume ?? "");
+      const volumeNum = parseVolume(volumeStr);
+      const serieStr = row.serie ? String(row.serie).trim() : "";
+      
+      // Incluir série na chave se existir
+      const key = serieStr
+        ? `${row.ano_colecao}-${volumeStr}-${segmento}-${serieStr}-${disciplina}`.toLowerCase()
+        : `${row.ano_colecao}-${volumeStr}-${segmento}-${disciplina}`.toLowerCase();
+        
       if (!acc[key]) {
         acc[key] = {
           anoColecao: String(row.ano_colecao ?? "").trim(),
-          volume: Number(row.volume ?? 0),
+          volume: volumeNum,
           segmento,
+          serie: serieStr || undefined,
           area: String(row["área_principal"] ?? row.area_principal ?? ""),
           disciplina,
           icon: iconMap[disciplina.toUpperCase()] || "placeholder"
@@ -444,11 +411,21 @@ const Index = () => {
 
   const filteredGeneralCredits = useMemo(() => {
     const byYearVolumeAndSegment = generalCredits.filter(
-      (item) =>
-        item.anoColecao === year &&
-        item.volume === activeVolume &&
-        item.segmento.toLowerCase() === segment.toLowerCase() &&
-        item.disciplina.toLowerCase() === "todos"
+      (item) => {
+        const funcaoLower = item.funcaoExibida.toLowerCase();
+        const isSoundMusic = funcaoLower.includes("créditos") && 
+                            (funcaoLower.includes("sons") || funcaoLower.includes("música"));
+        
+        return (
+          item.anoColecao === year &&
+          item.volume === activeVolume &&
+          segmentsMatch(item.segmento, segment) &&
+          item.disciplina.toLowerCase() === "todos" &&
+          (!serie || !item.serie || normalizeSegmentValue(item.serie) === normalizeSegmentValue(serie)) &&
+          // Excluir créditos de Sons e Música (já aparecem na seção inferior)
+          !isSoundMusic
+        );
+      }
     );
 
     const grouped = byYearVolumeAndSegment.reduce<Record<string, GeneralGroup["items"]>>((acc, item) => {
@@ -480,33 +457,354 @@ const Index = () => {
         }
         return a.area.localeCompare(b.area);
       });
-  }, [generalCredits, year, activeVolume, segment]);
+  }, [generalCredits, year, activeVolume, segment, serie]);
 
   const filteredCreditsData = useMemo(() => {
     return allCreditsData.filter(
       (credit) =>
         (!credit.anoColecao || credit.anoColecao === year) &&
         (!credit.volume || credit.volume === activeVolume) &&
-        (!credit.segmento || credit.segmento.toLowerCase() === segment.toLowerCase())
+        (!credit.segmento || segmentsMatch(credit.segmento, segment)) &&
+        (!serie || !credit.serie || normalizeSegmentValue(credit.serie) === normalizeSegmentValue(serie))
     );
-  }, [allCreditsData, year, activeVolume, segment]);
+  }, [allCreditsData, year, activeVolume, segment, serie]);
+
+  const conversasCredits = useMemo(() => {
+    return filteredCreditsData.filter(
+      (credit) => credit.disciplina?.toLowerCase().includes("conversas")
+    );
+  }, [filteredCreditsData]);
 
   const filteredSoundMusicCredits = useMemo(() => {
-    // Normalizar segmento para chave (lowercase)
-    const segmentKey = segment.toLowerCase();
-    const key = `${year}-${activeVolume}-${segmentKey}`;
-    return allSoundMusicCredits[key] || "";
-  }, [allSoundMusicCredits, year, activeVolume, segment]);
+    const segmentKey = getSegmentKey(segment);
+    if (!segmentKey) {
+      return "";
+    }
+    const baseKey = `${year}-${activeVolume}-${segmentKey}`.toLowerCase();
+    const serieKey = serie ? `-${normalizeSegmentValue(serie)}` : "";
+    const fullKey = `${baseKey}${serieKey}`.toLowerCase();
+    return (
+      allSoundMusicCredits[fullKey] ||
+      allSoundMusicCredits[baseKey] ||
+      ""
+    );
+  }, [allSoundMusicCredits, year, activeVolume, segment, serie]);
+
+  // Segmentos disponíveis filtrados pelo ano selecionado
+  const availableSegments = useMemo(() => {
+    if (!year || allRawRows.length === 0) {
+      return [];
+    }
+
+    const segmentsForYear = Array.from(
+      new Set(
+        allRawRows
+          .filter((row) => String(row.ano_colecao ?? "").trim() === year)
+          .map((row) => String(row.segmento ?? "").trim())
+          .filter((seg) => seg !== "")
+      )
+    ).sort();
+
+    return segmentsForYear;
+  }, [allRawRows, year]);
+
+  // Séries disponíveis filtradas por ano, segmento e volume
+  // Apenas para EM, AI e AF (não para Infantil)
+  const availableSeries = useMemo(() => {
+    if (!year || !segment || allRawRows.length === 0) {
+      return [];
+    }
+
+    const segmentLower = normalizedSegment;
+    // Verificar se o segmento precisa de série (EM, AI, AF)
+    const needsSerie = segmentLower.includes("medio") || 
+                      segmentLower.includes("anos iniciais") || 
+                      segmentLower.includes("anos finais");
+    
+    if (!needsSerie) {
+      return [];
+    }
+
+    const seriesForSegment = Array.from(
+      new Set(
+        allRawRows
+          .filter((row) => {
+            const rowAno = String(row.ano_colecao ?? "").trim();
+            const rowSegmento = String(row.segmento ?? "").trim();
+            const rowSerie = row.serie ? String(row.serie).trim() : "";
+            return rowAno === year && 
+                   segmentsMatch(rowSegmento, segment) && 
+                   rowSerie !== "";
+          })
+          .map((row) => String(row.serie ?? "").trim())
+          .filter((serie) => serie !== "")
+      )
+    ).sort();
+
+    return seriesForSegment;
+  }, [allRawRows, year, segment]);
+
+  // Ajustar segmento quando o ano mudar
+  useEffect(() => {
+    if (year && availableSegments.length > 0) {
+      if (!segment || !availableSegments.includes(segment)) {
+        setSegment(availableSegments[0]);
+      }
+    } else if (year && availableSegments.length === 0) {
+      setSegment("");
+    }
+  }, [year, availableSegments, segment]);
+
+  // Ajustar série quando o segmento mudar
+  useEffect(() => {
+    if (segment && availableSeries.length > 0) {
+      if (!serie || !availableSeries.includes(serie)) {
+        setSerie(availableSeries[0]);
+      }
+    } else {
+      setSerie("");
+    }
+  }, [segment, availableSeries, serie]);
 
   const hasDataForCurrentSelection = useMemo(() => {
+    if (isInfantilSegment) {
+      const hasConversas = conversasCredits.length > 0;
+      return hasConversas || filteredSoundMusicCredits.length > 0;
+    }
     return (
       filteredGeneralCredits.length > 0 ||
       filteredCreditsData.length > 0 ||
       filteredSoundMusicCredits.length > 0
     );
-  }, [filteredGeneralCredits, filteredCreditsData, filteredSoundMusicCredits]);
+  }, [
+    filteredGeneralCredits,
+    filteredCreditsData,
+    filteredSoundMusicCredits,
+    conversasCredits,
+    isInfantilSegment
+  ]);
 
-  const volumes = [1, 2, 3, 4];
+  const renderCreditCard = (
+    credit: CreditData,
+    index: number,
+    options: { forceConversas?: boolean; customTitle?: string } = {}
+  ) => {
+    const iconSlug = iconMap[credit.disciplina] || credit.icon;
+    const iconPath = getAssetPath(`${iconSlug}.png`);
+    const disciplinaLower = credit.disciplina?.toLowerCase() || "";
+    const isConversasDiscipline = disciplinaLower.includes("conversas");
+    const highlightConversas = options.forceConversas || (isInfantilSegment && isConversasDiscipline);
+    const displayTitle = options.customTitle || (highlightConversas ? "Conversas pedagógicas" : credit.disciplina);
+
+    const dynamicFields = credit.camposAdicionais
+      ? Object.entries(credit.camposAdicionais)
+      : [];
+
+    const regularFields = dynamicFields.filter(([_, campo]) => {
+      const labelLower = campo.label.toLowerCase();
+      return (
+        !labelLower.includes("capítulo") &&
+        !labelLower.includes("créditos") &&
+        !labelLower.match(/\b(va\d+|v\d+)\b/i)
+      );
+    });
+
+    const imageFields = dynamicFields.filter(([_, campo]) => {
+      const labelLower = campo.label.toLowerCase();
+      return (
+        labelLower.includes("capítulo") ||
+        labelLower.includes("créditos") ||
+        labelLower.match(/\b(va\d+|v\d+)\b/i)
+      );
+    });
+
+    const hasImageCredits =
+      credit.capitulo_3 ||
+      credit.capitulo_4 ||
+      credit.capitulo_5 ||
+      credit.capitulo_6 ||
+      credit.capitulo_7 ||
+      credit.capitulo_8 ||
+      imageFields.length > 0;
+
+    return (
+      <div
+        key={`${credit.disciplina}-${index}`}
+        className={`credit-card ${highlightConversas ? "credit-card--conversas" : ""}`}
+        data-area={credit.area}
+        data-disciplina={credit.disciplina}
+      >
+        <div className="card-header-section">
+          <div className="card-icon">
+            <img
+              src={iconPath}
+              alt={`Ícone ${credit.disciplina}`}
+              className="card-icon-image"
+            />
+          </div>
+          <h2 className="card-title">{displayTitle}</h2>
+        </div>
+
+        <div className="card-content">
+          {credit.autorias_livro && (
+            <div className="credit-item">
+              <strong>Livro didático:</strong>
+              <p>{credit.autorias_livro}</p>
+            </div>
+          )}
+
+          {credit.autorias_guia && (
+            <div className="credit-item">
+              <strong>Guia de Estudos:</strong>
+              <p>{credit.autorias_guia}</p>
+            </div>
+          )}
+
+          {credit.autorias_audiovisual && (
+            <div className="credit-item">
+              <strong>Audiovisual:</strong>
+              <p>{credit.autorias_audiovisual}</p>
+            </div>
+          )}
+
+          {credit.autorias_digital && (
+            <div className="credit-item">
+              <strong>Digital:</strong>
+              <p>{credit.autorias_digital}</p>
+            </div>
+          )}
+
+          {regularFields.map(([key, campo]) => (
+            <div key={key} className="credit-item">
+              <strong>{campo.label}:</strong>
+              <p>{campo.valor}</p>
+            </div>
+          ))}
+
+          {hasImageCredits && (
+            <div className="credits-section">
+              <strong className="credits-title">Créditos - Imagens</strong>
+
+              {credit.capitulo_3 && (
+                <div className="credit-chapter">
+                  <span className="chapter-label">Capítulo 3:</span>
+                  <span>{credit.capitulo_3}</span>
+                </div>
+              )}
+
+              {credit.capitulo_4 && (
+                <div className="credit-chapter">
+                  <span className="chapter-label">Capítulo 4:</span>
+                  <span>{credit.capitulo_4}</span>
+                </div>
+              )}
+
+              {credit.capitulo_5 && (
+                <div className="credit-chapter">
+                  <span className="chapter-label">Capítulo 5:</span>
+                  <span>{credit.capitulo_5}</span>
+                </div>
+              )}
+
+              {credit.capitulo_6 && (
+                <div className="credit-chapter">
+                  <span className="chapter-label">Capítulo 6:</span>
+                  <span>{credit.capitulo_6}</span>
+                </div>
+              )}
+
+              {credit.capitulo_7 && (
+                <div className="credit-chapter">
+                  <span className="chapter-label">Capítulo 7:</span>
+                  <span>{credit.capitulo_7}</span>
+                </div>
+              )}
+
+              {credit.capitulo_8 && (
+                <div className="credit-chapter">
+                  <span className="chapter-label">Capítulo 8:</span>
+                  <span>{credit.capitulo_8}</span>
+                </div>
+              )}
+
+              {imageFields.map(([key, campo]) => (
+                <div key={key} className="credit-chapter">
+                  <span className="chapter-label">{campo.label}:</span>
+                  <span>{campo.valor}</span>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {credit.creditos_gerais && (
+            <div className="credit-item general-credits">
+              <strong>Créditos Gerais:</strong>
+              <p>{credit.creditos_gerais}</p>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  };
+
+  const renderInfantilView = () => (
+    <div className="infantil-credits-container">
+      {conversasCredits.length > 0 && (
+        <div className="infantil-bottom-section">
+          {conversasCredits.map((credit, index) =>
+            renderCreditCard(credit, index, {
+              forceConversas: true,
+              customTitle: "Conversas pedagógicas"
+            })
+          )}
+        </div>
+      )}
+    </div>
+  );
+
+  const renderDefaultView = () => (
+    <div className="credits-grid">
+      {filteredCreditsData.map((credit, index) => renderCreditCard(credit, index))}
+    </div>
+  );
+
+  // Volumes disponíveis dinamicamente baseado nos dados
+  const availableVolumes = useMemo(() => {
+    if (!year || !segment || allRawRows.length === 0) {
+      return [];
+    }
+
+    const volumesSet = new Set<number>();
+
+    allRawRows.forEach((row) => {
+      const rowAno = String(row.ano_colecao ?? "").trim();
+      const rowSegmento = String(row.segmento ?? "").trim();
+      const rowSerie = row.serie ? String(row.serie).trim() : "";
+      const rowVolumeStr = String(row.volume ?? "");
+      const rowVolume = parseVolume(rowVolumeStr);
+
+      if (rowAno === year && segmentsMatch(rowSegmento, segment) && rowVolume > 0) {
+        if (serie) {
+          if (rowSerie === serie) {
+            volumesSet.add(rowVolume);
+          }
+        } else {
+          volumesSet.add(rowVolume);
+        }
+      }
+    });
+
+    return Array.from(volumesSet).sort((a, b) => a - b);
+  }, [allRawRows, year, segment, serie]);
+
+  // Ajustar volume ativo quando os volumes disponíveis mudarem
+  useEffect(() => {
+    if (availableVolumes.length > 0) {
+      if (!availableVolumes.includes(activeVolume)) {
+        setActiveVolume(availableVolumes[0]);
+      }
+    }
+  }, [availableVolumes, activeVolume]);
 
   return (
     <div className="credits-page">
@@ -529,46 +827,68 @@ const Index = () => {
       {/* Filters Section */}
       <div className="filters-section">
         <div className="header-controls">
-          <Select value={year} onValueChange={setYear}>
+          <Select value={year || undefined} onValueChange={setYear} disabled={availableYears.length === 0}>
             <SelectTrigger className="year-select">
-              <SelectValue />
+              <SelectValue placeholder={availableYears.length === 0 ? "Carregando..." : "Selecione o ano"} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="2025">2025</SelectItem>
-              <SelectItem value="2024">2024</SelectItem>
-              <SelectItem value="2023">2023</SelectItem>
+              {availableYears.map((yr) => (
+                <SelectItem key={yr} value={yr}>
+                  {yr}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
 
-          <Select value={segment} onValueChange={setSegment}>
+          <Select value={segment || undefined} onValueChange={setSegment} disabled={availableSegments.length === 0}>
             <SelectTrigger className="segment-select">
-              <SelectValue />
+              <SelectValue placeholder={availableSegments.length === 0 ? "Carregando..." : "Selecione o segmento"} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="Ensino Infantil">Ensino Infantil</SelectItem>
-              <SelectItem value="Ensino Fundamental">Ensino Fundamental</SelectItem>
-              <SelectItem value="Ensino Médio">Ensino Médio</SelectItem>
+              {availableSegments.map((seg) => (
+                <SelectItem key={seg} value={seg}>
+                  {seg}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
+
+          {/* Seletor de Série - apenas para EM, AI e AF */}
+          {availableSeries.length > 0 && (
+            <Select value={serie || undefined} onValueChange={setSerie} disabled={availableSeries.length === 0}>
+              <SelectTrigger className="serie-select">
+                <SelectValue placeholder={availableSeries.length === 0 ? "Carregando..." : "Selecione a série"} />
+              </SelectTrigger>
+              <SelectContent>
+                {availableSeries.map((ser) => (
+                  <SelectItem key={ser} value={ser}>
+                    {ser}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
         </div>
       </div>
 
       {/* Volume Selector Section */}
-      <div className="volume-section">
-        <div className="volume-selector">
-          {volumes.map((vol) => (
-            <Button
-              key={vol}
-              variant={activeVolume === vol ? "default" : "outline"}
-              size="sm"
-              className={`volume-button ${activeVolume === vol ? "active" : ""}`}
-              onClick={() => setActiveVolume(vol)}
-            >
-              Volume {vol}
-            </Button>
-          ))}
+      {availableVolumes.length > 0 && (
+        <div className="volume-section">
+          <div className="volume-selector">
+            {availableVolumes.map((vol) => (
+              <Button
+                key={vol}
+                variant={activeVolume === vol ? "default" : "outline"}
+                size="sm"
+                className={`volume-button ${activeVolume === vol ? "active" : ""}`}
+                onClick={() => setActiveVolume(vol)}
+              >
+                Volume {vol}
+              </Button>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
 
       {filteredGeneralCredits.length > 0 && (
         <section className="general-credits-section">
@@ -586,9 +906,13 @@ const Index = () => {
               </div>
             )}
 
-            <div className="general-grid">
+            {/* Primeira linha: Núcleo de Arte e Núcleo de Conteúdo Educacional */}
+            <div className="general-grid general-grid--top">
               {filteredGeneralCredits
-                .filter((group) => group.area !== "Geral")
+                .filter((group) => 
+                  group.area !== "Geral" && 
+                  (group.area === "Núcleo de Arte" || group.area === "Núcleo de Conteúdo Educacional")
+                )
                 .map((group) => (
                   <div key={group.area} className="general-box-wrapper">
                     <h3 className="general-box-title">{group.area}</h3>
@@ -605,6 +929,64 @@ const Index = () => {
                   </div>
                 ))}
             </div>
+
+            {/* Segunda linha: Conteúdo Digital */}
+            {filteredGeneralCredits.some((group) => group.area === "Conteúdo Digital") && (
+              <div className="general-grid general-grid--bottom">
+                {filteredGeneralCredits
+                  .filter((group) => group.area === "Conteúdo Digital")
+                  .map((group) => (
+                    <div key={group.area} className="general-box-wrapper general-box-wrapper--full">
+                      <h3 className="general-box-title">{group.area}</h3>
+                      <div className="general-box">
+                        <div className="general-box-body">
+                          {group.items.map((item, index) => (
+                            <div key={`${group.area}-${index}`} className="general-box-row">
+                              <span className="general-box-label">{item.funcao}</span>
+                              <span className="general-box-value">{item.bloco}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+              </div>
+            )}
+
+            {/* Outras áreas (se houver) */}
+            {filteredGeneralCredits
+              .filter((group) => 
+                group.area !== "Geral" && 
+                group.area !== "Núcleo de Arte" && 
+                group.area !== "Núcleo de Conteúdo Educacional" &&
+                group.area !== "Conteúdo Digital"
+              )
+              .length > 0 && (
+              <div className="general-grid">
+                {filteredGeneralCredits
+                  .filter((group) => 
+                    group.area !== "Geral" && 
+                    group.area !== "Núcleo de Arte" && 
+                    group.area !== "Núcleo de Conteúdo Educacional" &&
+                    group.area !== "Conteúdo Digital"
+                  )
+                  .map((group) => (
+                    <div key={group.area} className="general-box-wrapper">
+                      <h3 className="general-box-title">{group.area}</h3>
+                      <div className="general-box">
+                        <div className="general-box-body">
+                          {group.items.map((item, index) => (
+                            <div key={`${group.area}-${index}`} className="general-box-row">
+                              <span className="general-box-label">{item.funcao}</span>
+                              <span className="general-box-value">{item.bloco}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+              </div>
+            )}
           </div>
         </section>
       )}
@@ -614,128 +996,13 @@ const Index = () => {
         {!hasDataForCurrentSelection ? (
           <div className="empty-state">
             <p className="empty-state-message">
-              Não há créditos disponíveis para a Coleção {year}, Volume {activeVolume}.
+              N?o h? cr?ditos dispon?veis para a Cole??o {year}, Volume {activeVolume}.
             </p>
           </div>
+        ) : isInfantilSegment ? (
+          renderInfantilView()
         ) : (
-          <div className="credits-grid">
-            {filteredCreditsData.map((credit, index) => {
-            // Obtém a sigla do ícone baseado na disciplina ou usa o icon do credit
-            const iconSlug = iconMap[credit.disciplina] || credit.icon;
-            const iconPath = getAssetPath(`${iconSlug}.png`);
-            
-            return (
-              <div 
-                key={index} 
-                className="credit-card"
-                data-area={credit.area}
-                data-disciplina={credit.disciplina}
-              >
-                <div className="card-header-section">
-                  <div className="card-icon">
-                    <img 
-                      src={iconPath} 
-                      alt={`Ícone ${credit.disciplina}`}
-                      className="card-icon-image"
-                    />
-                  </div>
-                  <h2 className="card-title">{credit.disciplina}</h2>
-                </div>
-
-                <div className="card-content">
-                  {credit.autorias_livro && (
-                    <div className="credit-item">
-                      <strong>Livro didático:</strong>
-                      <p>{credit.autorias_livro}</p>
-                    </div>
-                  )}
-
-                  {credit.autorias_guia && (
-                    <div className="credit-item">
-                      <strong>Guia de Estudos:</strong>
-                      <p>{credit.autorias_guia}</p>
-                    </div>
-                  )}
-
-                  {credit.autorias_audiovisual && (
-                    <div className="credit-item">
-                      <strong>Audiovisual:</strong>
-                      <p>{credit.autorias_audiovisual}</p>
-                    </div>
-                  )}
-
-                  {credit.autorias_digital && (
-                    <div className="credit-item">
-                      <strong>Digital:</strong>
-                      <p>{credit.autorias_digital}</p>
-                    </div>
-                  )}
-
-                  {/* Renderiza campos dinâmicos adicionais */}
-                  {credit.camposAdicionais && Object.entries(credit.camposAdicionais).map(([key, campo]) => (
-                    <div key={key} className="credit-item">
-                      <strong>{campo.label}:</strong>
-                      <p>{campo.valor}</p>
-                    </div>
-                  ))}
-
-                  <div className="credits-section">
-                    <strong className="credits-title">Créditos - Imagens</strong>
-                    
-                    {credit.capitulo_3 && (
-                      <div className="credit-chapter">
-                        <span className="chapter-label">Capítulo 3:</span>
-                        <span>{credit.capitulo_3}</span>
-                      </div>
-                    )}
-
-                    {credit.capitulo_4 && (
-                      <div className="credit-chapter">
-                        <span className="chapter-label">Capítulo 4:</span>
-                        <span>{credit.capitulo_4}</span>
-                      </div>
-                    )}
-
-                    {credit.capitulo_5 && (
-                      <div className="credit-chapter">
-                        <span className="chapter-label">Capítulo 5:</span>
-                        <span>{credit.capitulo_5}</span>
-                      </div>
-                    )}
-
-                    {credit.capitulo_6 && (
-                      <div className="credit-chapter">
-                        <span className="chapter-label">Capítulo 6:</span>
-                        <span>{credit.capitulo_6}</span>
-                      </div>
-                    )}
-
-                    {credit.capitulo_7 && (
-                      <div className="credit-chapter">
-                        <span className="chapter-label">Capítulo 7:</span>
-                        <span>{credit.capitulo_7}</span>
-                      </div>
-                    )}
-
-                    {credit.capitulo_8 && (
-                      <div className="credit-chapter">
-                        <span className="chapter-label">Capítulo 8:</span>
-                        <span>{credit.capitulo_8}</span>
-                      </div>
-                    )}
-                  </div>
-
-                  {credit.creditos_gerais && (
-                    <div className="credit-item general-credits">
-                      <strong>Créditos Gerais:</strong>
-                      <p>{credit.creditos_gerais}</p>
-                    </div>
-                  )}
-                </div>
-              </div>
-            );
-          })}
-          </div>
+          renderDefaultView()
         )}
       </main>
 
@@ -814,3 +1081,7 @@ const Index = () => {
 };
 
 export default Index;
+
+
+
+
