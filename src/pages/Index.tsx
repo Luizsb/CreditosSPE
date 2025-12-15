@@ -214,7 +214,7 @@ const Index = () => {
       try {
         // Adiciona timestamp para evitar cache do navegador
         const timestamp = new Date().getTime();
-        const url = `${getAssetPath("creditos.xlsx")}?t=${timestamp}`;
+        const url = `${getAssetPath("data/creditos.xlsx")}?t=${timestamp}`;
         const response = await fetch(url, {
           cache: "no-store"
         });
@@ -590,7 +590,7 @@ const Index = () => {
     options: { forceConversas?: boolean; customTitle?: string } = {}
   ) => {
     const iconSlug = iconMap[credit.disciplina] || credit.icon;
-    const iconPath = getAssetPath(`${iconSlug}.png`);
+    const iconPath = getAssetPath(`icons/${iconSlug}.png`);
     const disciplinaLower = credit.disciplina?.toLowerCase() || "";
     const isConversasDiscipline = disciplinaLower.includes("conversas");
     const highlightConversas = options.forceConversas || (isInfantilSegment && isConversasDiscipline);
@@ -815,8 +815,8 @@ const Index = () => {
           
           <div className="header-logo-section">
             <div className="header-divider"></div>
-            <img 
-              src={getAssetPath("logo-positivoSVG.svg")} 
+            <img
+              src={getAssetPath("logos/logo-positivoSVG.svg")}
               alt="Logo Positivo" 
               className="logo-positivo-image"
             />
@@ -1031,14 +1031,14 @@ const Index = () => {
             R. João Domachoski, 5. CEP: 81200-150 - Mossunguê - Curitiba - PR
           </p>
           <div className="footer-logos">
-            <img 
-              src={getAssetPath("logo-positivoWhiteSVG.svg")} 
+            <img
+              src={getAssetPath("logos/logo-positivoWhiteSVG.svg")}
               alt="Logo Positivo" 
               className="footer-logo-positivo"
             />
             <div className="footer-logo-abdr-container">
-              <img 
-                src={getAssetPath("abdr_white.png")} 
+              <img
+                src={getAssetPath("partners/abdr_white.png")}
                 alt="ABDR" 
                 className="footer-logo-abdr"
               />
