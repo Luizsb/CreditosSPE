@@ -1,73 +1,119 @@
-# Welcome to your Lovable project
+# Créditos SPE
 
-## Project info
+Aplicação web para visualização da ficha de créditos das obras do **Sistema Positivo de Ensino (SPE)**,
+a partir de uma planilha de créditos em formato **Excel**.
 
-**URL**: https://lovable.dev/projects/d4267153-38d3-4e19-b6dd-4a47d711128f
+Os créditos são organizados por:
 
-## How can I edit this code?
+- ano da coleção  
+- segmento  
+- série (quando aplicável)  
+- volume  
+- disciplina e área  
 
-There are several ways of editing your application.
+e exibidos em cartões com as principais informações de autoria, créditos gerais, créditos de imagens,
+sons e música.
 
-**Use Lovable**
+---
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/d4267153-38d3-4e19-b6dd-4a47d711128f) and start prompting.
+## Tecnologias utilizadas
 
-Changes made via Lovable will be committed automatically to this repo.
+- **React** (com **TypeScript**)
+- **Vite** (ferramenta de build e desenvolvimento)
+- **shadcn/ui** + **Radix UI** (componentes de interface, como selects e botões)
+- **Tailwind CSS** e CSS tradicional (arquivo `src/App.css`) para estilização
+- **xlsx** para leitura da planilha de créditos (`.xlsx`)
 
-**Use your preferred IDE**
+---
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+## Como funciona
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+1. A aplicação lê o arquivo `public/data/creditos.xlsx`, que contém pelo menos as abas:
+   - **Geral**: créditos gerais, núcleos, conteúdo digital etc.
+   - **Autorias**: créditos por disciplina, capítulos, mídias e campos adicionais.
+2. Os dados da planilha são normalizados e agrupados no carregamento inicial da página.
+3. O usuário seleciona:
+   - **Ano da coleção**
+   - **Segmento**
+   - **Série** (quando existir para o segmento escolhido)
+   - **Volume**
+4. A partir desses filtros, a tela monta:
+   - cartões por disciplina com autorias e créditos gerais;
+   - blocos de créditos gerais por área (Núcleo de Arte, Conteúdo Educacional, Conteúdo Digital etc.);
+   - seção específica para **Créditos – Sons e Música**.
 
-Follow these steps:
+---
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+## Como rodar o projeto localmente
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+### Pré-requisitos
 
-# Step 3: Install the necessary dependencies.
-npm i
+- **Node.js** (versão recomendada: 18 ou superior)
+- **npm** (instalado junto com o Node)
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+### Passos
+
+```bash
+# 1. Clonar o repositório
+git clone https://github.com/Luizsb/CreditosSPE.git
+cd CreditosSPE
+
+# 2. Instalar dependências
+npm install
+
+# 3. Rodar o servidor de desenvolvimento
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+Por padrão, a aplicação ficará disponível em um endereço semelhante a:
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+- `http://localhost:5173`
 
-**Use GitHub Codespaces**
+(a porta pode variar conforme sua configuração local do Vite).
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+---
 
-## What technologies are used for this project?
+## Estrutura principal do projeto
 
-This project is built with:
+Alguns arquivos e pastas importantes:
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+- `src/pages/Index.tsx` – página principal da ficha de créditos, lógica de filtros e montagem dos cartões.  
+- `src/App.css` – estilos específicos da página de créditos (layout, cartões, tipografia etc.).  
+- `public/data/creditos.xlsx` – planilha fonte dos créditos (arquivo lido em tempo de execução).  
+- `src/components/ui` – componentes de UI reutilizáveis (Select, Button, etc.).  
 
-## How can I deploy this project?
+---
 
-Simply open [Lovable](https://lovable.dev/projects/d4267153-38d3-4e19-b6dd-4a47d711128f) and click on Share -> Publish.
+## Atualizando a planilha de créditos
 
-## Can I connect a custom domain to my Lovable project?
+Para atualizar os créditos exibidos pela aplicação:
 
-Yes, you can!
+1. Gere uma nova planilha seguindo o mesmo formato da atual (`creditos.xlsx`), respeitando:
+   - nomes das abas (por exemplo: **Geral**, **Autorias**);
+   - nomes das colunas utilizadas pelo código (ano, volume, segmento, série, disciplina, blocos de créditos etc.).
+2. Substitua o arquivo:
+   - `public/data/creditos.xlsx`
+3. Rode novamente o projeto (`npm run dev`) ou faça uma nova build (`npm run build`) para disponibilizar a versão atualizada.
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+---
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+## Build para produção
+
+Para gerar uma versão otimizada para produção:
+
+```bash
+npm run build
+```
+
+E, se quiser testar localmente a build gerada:
+
+```bash
+npm run preview
+```
+
+---
+
+## Licença
+
+Este repositório é de uso interno da Companhia Brasileira de Educação e Sistemas de Ensino S.A.
+O conteúdo e os créditos exibidos pela aplicação são de propriedade da instituição.
