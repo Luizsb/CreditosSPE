@@ -12,6 +12,12 @@ dist
 dist-ssr
 *.local
 
+# Backups e arquivos locais
+versoes_backup/
+public/data/*.old.xlsx
+public/data/Modelo*.xlsx
+vite.config.ts.timestamp-*.mjs
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
