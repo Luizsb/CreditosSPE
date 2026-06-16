@@ -7,6 +7,7 @@
     "dev": "vite",
     "build": "vite build",
     "build:aws": "vite build --base /",
+    "build:creditos25": "vite build --base /CREDITOS25/",
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
     "preview": "vite preview"
